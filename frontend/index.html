@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Local Secure AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@400;500;600;700&family=Syne:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true"></div>
+
+    <div class="shell">
+      <header class="masthead">
+        <div class="brand-block">
+          <p class="brand">Local Secure AI</p>
+          <p class="tagline">On-premise LLM service — chat, RAG, and safety controls.</p>
+        </div>
+        <div class="status-rail" aria-live="polite">
+          <span class="status-dot" id="statusDot" data-state="checking"></span>
+          <div class="status-copy">
+            <span id="statusLabel">Checking stack…</span>
+            <span class="mono" id="modelLabel">—</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="controls" aria-label="Demo controls">
+          <label class="field">
+            <span>Mode</span>
+            <div class="segment" role="tablist">
+              <button type="button" class="seg active" data-mode="chat" role="tab" aria-selected="true">Chat</button>
+              <button type="button" class="seg" data-mode="ask" role="tab" aria-selected="false">Ask (RAG)</button>
+            </div>
+          </label>
+
+          <label class="field">
+            <span>Safety</span>
+            <select id="safetyMode">
+              <option value="normal">normal</option>
+              <option value="strict">strict</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Session</span>
+            <input id="sessionId" type="text" value="session-1" autocomplete="off" />
+          </label>
+
+          <button type="button" class="ghost" id="clearSession">Clear session</button>
+
+          <p class="hint" id="modeHint">
+            Streaming chat ke Ollama lokal. Konteks tersimpan per session.
+          </p>
+        </aside>
+
+        <section class="stage" aria-label="Conversation">
+          <div class="thread" id="thread"></div>
+
+          <form class="composer" id="composer">
+            <label class="sr-only" for="prompt">Prompt</label>
+            <textarea
+              id="prompt"
+              rows="2"
+              placeholder="Tanya sesuatu… coba prinsip privacy, atau uji prompt injection di mode strict"
+              required
+            ></textarea>
+            <div class="composer-actions">
+              <span class="meta mono" id="metaLine">ready</span>
+              <button type="submit" id="sendBtn">Send</button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script src="/assets/app.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets/
+
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.eggs/
+dist/
+build/
+pip-wheel-metadata/
+share/python-wheels/
+
+# Testing / coverage / type checkers
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+.pyright/
+.dmypy.json
+dmypy.json
+
+# IDE / editor
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Desktop.ini
+
+# Logs & runtime
+*.log
+logs/
+tmp/
+temp/
+.cache/
+
+# Local data / indexes (if added later)
+data/embeddings/
+data/index/
+*.sqlite3
+*.db
+
+# Jupyter
+.ipynb_checkpoints/
