@@ -93,7 +93,7 @@ class RagService:
         hits = self.retrieve(question, top_k=top_k)
         if not hits:
             return (
-                "Saya tidak menemukan konteks relevan di knowledge base lokal (docs/).",
+                "I could not find relevant context in the local knowledge base (docs/).",
                 [],
             )
 
@@ -110,7 +110,7 @@ class RagService:
             )
 
         system = (
-            "You are Local Secure AI. "
+            "You are Alder AI. "
             "Answer ONLY using the provided context. "
             "If context is insufficient, say so. Reply in the user's language."
         )

@@ -10,6 +10,18 @@ import httpx
 from app.core.config import settings
 
 
+def model_is_installed(requested: str, installed: list[str]) -> bool:
+    """True if Ollama already has the configured model tag."""
+    if not requested:
+        return False
+    names = set(installed)
+    if requested in names or f"{requested}:latest" in names:
+        return True
+    if ":" not in requested:
+        return any(item.startswith(f"{requested}:") for item in names)
+    return any(item.startswith(f"{requested}-") for item in names)
+
+
 class OllamaError(Exception):
     def __init__(self, message: str, *, unavailable: bool = False) -> None:
         super().__init__(message)
@@ -19,15 +31,35 @@ class OllamaError(Exception):
 class OllamaClient:
     def __init__(self) -> None:
         self.base_url = settings.ollama_base_url.rstrip("/")
-        self.model = settings.ollama_model
-        self.timeout = settings.ollama_timeout_seconds
+
+    @property
+    def model(self) -> str:
+        return settings.ollama_model
+
+    @property
+    def embed_model(self) -> str:
+        return settings.ollama_embed_model
+
+    @property
+    def vision_model(self) -> str:
+        return settings.ollama_vision_model
+
+    @property
+    def timeout(self) -> float:
+        return settings.ollama_timeout_seconds
 
     async def health(self) -> dict[str, Any]:
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
                 tags = await client.get(f"{self.base_url}/api/tags")
                 tags.raise_for_status()
-                return {"status": "up", "models": [m["name"] for m in tags.json().get("models", [])]}
+                models = [m["name"] for m in tags.json().get("models", [])]
+                result: dict[str, Any] = {"status": "up", "models": models}
+                if not model_is_installed(self.model, models):
+                    result["detail"] = (
+                        f"Chat model {self.model} is not installed. Run: ollama pull {self.model}"
+                    )
+                return result
         except Exception as exc:  # noqa: BLE001 — surface as health detail
             return {"status": "down", "models": [], "detail": str(exc)}
 
@@ -36,6 +68,17 @@ class OllamaClient:
         if info["status"] != "up":
             raise OllamaError(info.get("detail", "Ollama unavailable"), unavailable=True)
         return info["models"]
+
+    async def embed(self, text: str) -> list[float]:
+        payload = {"model": self.embed_model, "prompt": text}
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                resp = await client.post(f"{self.base_url}/api/embeddings", json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+                return data.get("embedding", [])
+        except httpx.HTTPError as exc:
+            raise OllamaError(f"Ollama embed failed: {exc}", unavailable=True) from exc
 
     async def chat(self, messages: list[dict[str, str]], *, temperature: float = 0.2) -> str:
         payload = {
@@ -52,6 +95,22 @@ class OllamaClient:
                 return data.get("message", {}).get("content", "")
         except httpx.HTTPError as exc:
             raise OllamaError(f"Ollama chat failed: {exc}", unavailable=True) from exc
+
+    async def vision_chat(self, prompt: str, image_b64: str, *, temperature: float = 0.1) -> str:
+        payload = {
+            "model": self.vision_model,
+            "messages": [{"role": "user", "content": prompt, "images": [image_b64]}],
+            "stream": False,
+            "options": {"temperature": temperature},
+        }
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                resp = await client.post(f"{self.base_url}/api/chat", json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+                return data.get("message", {}).get("content", "")
+        except httpx.HTTPError as exc:
+            raise OllamaError(f"Ollama vision failed: {exc}", unavailable=True) from exc
 
     async def chat_stream(
         self,
