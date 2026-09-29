@@ -1,4 +1,4 @@
-# Alder AI
+# Chat Ai
 
 On-premise AI chatbot for your own files. Powered by [Ollama](https://ollama.com) — no cloud LLM, data stays on this machine.
 
